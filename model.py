@@ -186,8 +186,8 @@ class PyramidE(torch.nn.Module):
         x = self.bn0(stack_inp1) # 1024,1,20,20
         x = self.input_drop(x)
         x_origin = x
-        # x_normal = x  # 普通卷积使用 x_origin：(N, C, H, W) -->1024,1,20,20
-        # Self-att 不行
+        # x_normal = x  
+        # Self-att 
         # x = x.view(e1_embedded.size(0), self.reshape_H * self.reshape_W, -1)  # 1024,400,1
         # x = self.att_0(x, x, x)
         # x = x.view(e1_embedded.size(0), -1, self.reshape_H, self.reshape_W) # 1024,15,20,20
@@ -264,7 +264,7 @@ class PyramidE(torch.nn.Module):
         x23 = self.bn1_2(x23)
         # x23 = F.relu(x23)
         x23 = self.leaky_relu(x23)
-        # SK  (☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆ Ablation-2)
+        # SK  (Ablation-2)
         x2 = torch.cat([x21, x22, x23], dim=1)
         x_2 = x2
         x2 = self.SK(x2) # 1024,15,20,20
