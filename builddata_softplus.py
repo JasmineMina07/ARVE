@@ -164,27 +164,24 @@ def build_data(name='WN18RR', path=''):
         lines = f.readlines()
     for _, line in enumerate(lines):
         head, tail, rel, val = parse_line(line)
-        # count the number of occurrences for each (heal, rel)  {关系：{头实体：头实体出现次数}}
         if relation2id[rel] not in left_entity:
             left_entity[relation2id[rel]] = {}
         if entity2id[head] not in left_entity[relation2id[rel]]:
             left_entity[relation2id[rel]][entity2id[head]] = 0
         left_entity[relation2id[rel]][entity2id[head]] += 1
-        # count the number of occurrences for each (rel, tail) {关系：{尾实体：尾实体出现次数}}
         if relation2id[rel] not in right_entity:
             right_entity[relation2id[rel]] = {}
         if entity2id[tail] not in right_entity[relation2id[rel]]:
             right_entity[relation2id[rel]][entity2id[tail]] = 0
         right_entity[relation2id[rel]][entity2id[tail]] += 1
-    # 计算头实体出现的平均次数可以帮助我们了解每个关系的稠密程度。当一个关系下的头实体出现次数很多时，这个关系就是比较稠密的，可能存在一些常见的头实体和这个关系之间的语义关联；而当一个关系下的头实体出现次数很少时，这个关系就是比较稀疏的，可能需要更多的数据才能学习到该关系的语义。
-    left_avg = {} #计算训练集中每个关系(rel)下头实体(head)出现的平均次数
+   left_avg = {} 
     for i in range(len(relation2id)):
         left_avg[i] = sum(left_entity[i].values()) * 1.0 / len(left_entity[i])
     right_avg = {}
     for i in range(len(relation2id)):
         right_avg[i] = sum(right_entity[i].values()) * 1.0 / len(right_entity[i])
 
-    headTailSelector = {} # 计算训练集中每个关系(rel)的头实体和尾实体在负样本采样时被选择的概率，计算头实体和尾实体的被选择概率可以帮助我们在负样本采样时更好地平衡头实体和尾实体的采样概率，避免头实体或尾实体被过度采样或者被忽略不计。
+    headTailSelector = {} 
     for i in range(len(relation2id)):
         headTailSelector[i] = 1000 * right_avg[i] / (right_avg[i] + left_avg[i])
 
