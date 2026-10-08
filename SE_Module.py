@@ -16,29 +16,29 @@ class channel_attention(nn.Module):
 
     def forward(self,x):
         b,c,h,w = x.size()
-        max_pool_out = self.max_pool(x).view([b,c])  # reshae的原因是linear的输入是二维
+        max_pool_out = self.max_pool(x).view([b,c]) 
         avg_pool_out = self.avg_pool(x).view([b,c])
 
         max_fc_out = self.fc(max_pool_out)
         avg_fc_out = self.fc(avg_pool_out)
 
         out = max_fc_out + avg_fc_out
-        out = self.sigmoid(out).view([b,c,1,1])  #都不一定view,flatten、squeeze都行
+        out = self.sigmoid(out).view([b,c,1,1])  
         return out*x
 
 
 class spacial_attention(nn.Module):
     def __init__(self,kernel_size = 7):
         super(spacial_attention, self).__init__()
-        padding = kernel_size//2  # 为了保证卷积后的特征图尺寸不变  我是用h-k+2p+1/s算的，但网上有简便方法就是卷积核尺寸整除2
+        padding = kernel_size//2 
         self.conv = nn.Conv2d(2,1,kernel_size,1,padding,bias = False)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self,x):
         b,c,h,w = x.size()
-        max_pool_out,_ = torch.max(x,dim=1,keepdim=True) # 输出的是最大值及其索引 ；通道维度保留
-        avg_pool_out = torch.mean(x, dim=1, keepdim=True)  # 在通道维度上求平均值
-        pool_out = torch.cat([max_pool_out, avg_pool_out], dim=1)  # 在通道维度上拼接
+        max_pool_out,_ = torch.max(x,dim=1,keepdim=True) 
+        avg_pool_out = torch.mean(x, dim=1, keepdim=True) 
+        pool_out = torch.cat([max_pool_out, avg_pool_out], dim=1) 
 
         out = self.conv(pool_out)
         out = self.sigmoid(out)
@@ -57,20 +57,20 @@ class spacial_attention(nn.Module):
 
 # ECA
 # class SELayer(nn.Module):
-#     def __init__(self,channel,gamma = 2,b = 1): # 需要根据通道数自适应地计算卷积核大小
+#     def __init__(self,channel,gamma = 2,b = 1):
 #         super(SELayer, self).__init__()
 #
 #         kernel_size = int(abs(math.log(channel,2)+b)/gamma)
-#         kernel_size = kernel_size if kernel_size % 2 else kernel_size +1 # 如果k是奇数，返回它；如果是偶数，返回k+1  # 5
+#         kernel_size = kernel_size if kernel_size % 2 else kernel_size +1
 #         padding = kernel_size//2  # 2
 #
 #         self.avg_pool = nn.AdaptiveAvgPool2d(1)
-#         self.conv = nn.Conv1d(1,1,kernel_size ,padding = padding, bias = False) # 当做序列模型来看
+#         self.conv = nn.Conv1d(1,1,kernel_size ,padding = padding, bias = False) 
 #         self.sigmoid = nn.Sigmoid()
 #
 #     def forward(self,x):
 #         b ,c ,h, w = x.size()
-#         avg =self.avg_pool(x).view([b,1,c]) # [2,512,1,1] -> [2,1,512] 因为下一步要进行1d卷积 其输入是[b,in_channel,sequence_length]
+#         avg =self.avg_pool(x).view([b,1,c]) # [2,512,1,1] -> [2,1,512] 
 #         out = self.conv(avg) # b,1,c [2,1,512]
 #         out = self.sigmoid(out).view([b,c,1,1])
 #         return out*x
